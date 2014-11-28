@@ -8,16 +8,16 @@
 
 package kihira.tails.common;
 
-import cpw.mods.fml.client.CustomModLoadingErrorDisplayException;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.versioning.VersionParser;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.client.CustomModLoadingErrorDisplayException;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.versioning.VersionParser;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.resources.I18n;
@@ -139,7 +139,7 @@ public class FoxLibManager {
             @Override
             public void run() {
                 screenWorking.resetProgressAndMessage(I18n.format("foxlib.downloader.downloading"));
-                screenWorking.resetProgresAndWorkingMessage("Starting...");
+                //screenWorking.resetProgresAndWorkingMessage("Starting..."); TODO
 
                 File target;
                 URL download;
@@ -153,7 +153,7 @@ public class FoxLibManager {
                     DownloadCountingOutputStream countingOutputStream = new DownloadCountingOutputStream(output, screenWorking);
 
                     totalSize = Long.valueOf(download.openConnection().getHeaderField("Content-Length"));
-                    screenWorking.displayProgressMessage(String.format("Downloading file (%.3f MB)...", totalSize / 1000000F));
+                    screenWorking.displayLoadingString(String.format("Downloading file (%.3f MB)...", totalSize / 1000000F));
 
                     IOUtils.copy(input, countingOutputStream);
                 } catch (IOException e) {
@@ -239,7 +239,7 @@ public class FoxLibManager {
         public void throwFoxlibError() {
             throw new CustomModLoadingErrorDisplayException() {
                 @Override
-                public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRenderer) {
+                public void initGui(GuiErrorScreen errorScreen, FontRenderer fontRendererObj) {
                     try {
                         Desktop.getDesktop().browse(URI.create(foxlibDownloadFallback));
                     } catch (IOException e) {
@@ -248,9 +248,9 @@ public class FoxLibManager {
                 }
 
                 @Override
-                public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRenderer, int mouseRelX, int mouseRelY, float tickTime) {
+                public void drawScreen(GuiErrorScreen errorScreen, FontRenderer fontRendererObj, int mouseRelX, int mouseRelY, float tickTime) {
                     String s = I18n.format("foxlib.downloader.outofdate");
-                    fontRenderer.drawString(s, (errorScreen.width / 2) - (fontRenderer.getStringWidth(s) / 2), errorScreen.height / 2, 0xFFFFFFFF);
+                    fontRendererObj.drawString(s, (errorScreen.width / 2) - (fontRendererObj.getStringWidth(s) / 2), errorScreen.height / 2, 0xFFFFFFFF);
                 }
             };
         }

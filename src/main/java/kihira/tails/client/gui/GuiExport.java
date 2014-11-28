@@ -107,7 +107,7 @@ public class GuiExport extends GuiBaseScreen {
 
             if (file.exists() && file.canWrite()) {
                 this.exportLoc = file.toURI();
-                file = new File(file, File.separatorChar + player.getCommandSenderName() + ".png");
+                file = new File(file, File.separatorChar + player.getName() + ".png");
 
                 if (!file.exists()) {
                     try {
@@ -163,7 +163,7 @@ public class GuiExport extends GuiBaseScreen {
     }
 
     @Override
-    protected void keyTyped(char key, int keyCode) {
+    protected void keyTyped(char key, int keyCode) throws IOException{
         if (keyCode == 1) {
             this.mc.displayGuiScreen(parent);
         }

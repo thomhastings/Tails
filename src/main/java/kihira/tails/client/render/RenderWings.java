@@ -11,8 +11,9 @@ package kihira.tails.client.render;
 import kihira.tails.client.model.ModelPartBase;
 import kihira.tails.common.PartInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
@@ -26,7 +27,7 @@ public class RenderWings extends RenderPart {
     @Override
     protected void doRender(EntityLivingBase entity, PartInfo info, float partialTicks) {
         Minecraft.getMinecraft().renderEngine.bindTexture(info.getTexture());
-        Tessellator tessellator = Tessellator.instance;
+        WorldRenderer worldRenderer = Tessellator.getInstance().getWorldRenderer();
         boolean isFlying = entity instanceof EntityPlayer && ((EntityPlayer) entity).capabilities.isFlying && entity.isAirBorne || entity.fallDistance > 0F;
         float timestep = ModelPartBase.getAnimationTime(isFlying ? 500 : 6500, entity);
         float angle = (float) Math.sin(timestep) * (isFlying ? 24F : 4F);
@@ -41,13 +42,13 @@ public class RenderWings extends RenderPart {
         GL11.glPushMatrix();
         GL11.glTranslatef(0F, 0F, 1F * ModelPartBase.SCALE);
         GL11.glRotatef(30F - angle, 1F, 0F, 0F);
-        ItemRenderer.renderItemIn2D(tessellator, 0, 0, 1, 1, 32, 32, ModelPartBase.SCALE / scale);
+        Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 32, 32, 32, 32);
         GL11.glPopMatrix();
 
         GL11.glPushMatrix();
         GL11.glTranslatef(0F, 0.3F * ModelPartBase.SCALE, 0F);
         GL11.glRotatef(-30F + angle, 1F, 0F, 0F);
-        ItemRenderer.renderItemIn2D(tessellator, 0, 0, 1, 1, 32, 32, ModelPartBase.SCALE / scale);
+        Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 32, 32, 32, 32);
         GL11.glPopMatrix();
     }
 }

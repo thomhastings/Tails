@@ -32,8 +32,6 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
@@ -128,7 +126,7 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         }
 
         //Tint edit pane
-        this.hexText = new GuiTextField(this.fontRendererObj, this.previewWindowRight + 30, this.editPaneTop + 20, 73, 10);
+        this.hexText = new GuiTextField(0, this.fontRendererObj, this.previewWindowRight + 30, this.editPaneTop + 20, 73, 10);
         this.hexText.setMaxStringLength(6);
         this.hexText.setText(Integer.toHexString(this.currTintColour));
 
@@ -216,6 +214,9 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         this.drawGradientRect(this.previewWindowRight, 0, this.width, this.height, 0xCC000000, 0xCC000000);
         this.drawGradientRect(this.previewWindowLeft, this.previewWindowBottom, this.previewWindowRight, this.height, 0xDD000000, 0xDD000000);
 
+        //Player
+        drawEntity(this.width / 2, (this.previewWindowBottom / 2) + (this.scaledRes.getScaledHeight() / 4), this.scaledRes.getScaledHeight() / 4, this.yaw, this.pitch, this.mc.thePlayer);
+
         //Tints
         int topOffset = 10;
         for (int tint = 1; tint <= 3; tint++) {
@@ -234,9 +235,6 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
             this.fontRendererObj.drawString(I18n.format("gui.hex") + ":", this.previewWindowRight + 5, this.editPaneTop + 21, 0xFFFFFF);
             this.hexText.drawTextBox();
         }
-
-        //Player
-        drawEntity(this.width / 2, (this.previewWindowBottom / 2) + (this.scaledRes.getScaledHeight() / 4), this.scaledRes.getScaledHeight() / 4, this.yaw, this.pitch, this.mc.thePlayer);
 
         this.zLevel = 0;
         //Tails list
@@ -343,7 +341,7 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
     }
 
     @Override
-    protected void keyTyped(char letter, int keyCode) {
+    protected void keyTyped(char letter, int keyCode) throws IOException{
         this.hexText.textboxKeyTyped(letter, keyCode);
 
         try {
@@ -364,7 +362,7 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseEvent) {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseEvent) throws IOException{
 /*        if (mouseEvent != 0 || !this.partList.func_148179_a(mouseX, mouseY, mouseEvent)) {
             super.mouseClicked(mouseX, mouseY, mouseEvent);
         }*/
@@ -392,9 +390,9 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
     }
 
     @Override
-    protected void mouseMovedOrUp(int mouseX, int mouseY, int mouseEvent) {
+    protected void mouseReleased(int mouseX, int mouseY, int mouseEvent) {
         prevMouseX = -1;
-        super.mouseMovedOrUp(mouseX, mouseY, mouseEvent);
+        super.mouseReleased(mouseX, mouseY, mouseEvent);
     }
 
     @Override
@@ -455,7 +453,7 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         GL11.glTranslatef(x, y, -10F);
         GL11.glScalef(-scale, scale, scale);
         GL11.glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
-        GL11.glTranslatef(0.0F, entity.yOffset, 0.0F);
+        GL11.glTranslatef(0.0F, 0F, 0.0F); //GL11.glTranslatef(0.0F, entity.yOffset, 0.0F);
         GL11.glRotatef(pitch, 1F, 0.0F, 0.0F);
         GL11.glRotatef(yaw, 0F, 1F, 0.0F);
 
@@ -467,8 +465,8 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         entity.setCurrentItemOrArmor(0, null);
 
         RenderHelper.enableStandardItemLighting();
-        RenderManager.instance.playerViewY = 180.0F;
-        RenderManager.instance.renderEntityWithPosYaw(entity, 0D, 0D, 0D, 0F, 1F);
+        Minecraft.getMinecraft().getRenderManager().playerViewY = 180.0F;
+        Minecraft.getMinecraft().getRenderManager().renderEntityWithPosYaw(entity, 0D, 0D, 0D, 0F, 1F);
         RenderHelper.disableStandardItemLighting();
         OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -488,7 +486,7 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         GL11.glScalef(-scale, scale, 1F);
 
         RenderHelper.enableStandardItemLighting();
-        RenderManager.instance.playerViewY = 180.0F;
+        Minecraft.getMinecraft().getRenderManager().playerViewY = 180.0F;
         PartRegistry.getRenderPart(partInfo.partType, partInfo.typeid).render(this.fakeEntity, partInfo, 0, 0, 0, 0);
         RenderHelper.disableStandardItemLighting();
         OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
@@ -602,20 +600,23 @@ public class GuiEditor extends GuiBaseScreen implements IListCallback, IHSBSlide
         }
 
         @Override
-        public void drawEntry(int index, int x, int y, int listWidth, int p_148279_5_, Tessellator tessellator, int mouseX, int mouseY, boolean mouseOver) {
+        public void setSelected(int p_178011_1_, int p_178011_2_, int p_178011_3_) {}
+
+        @Override
+        public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
             if (partInfo.hasPart) {
                 renderPart(previewWindowLeft - 25, y - 25, 50, partInfo);
                 fontRendererObj.drawString(I18n.format(PartRegistry.getRenderPart(partInfo.partType, partInfo.typeid)
-                        .getUnlocalisedName(partInfo.subid)), 5, y + (partList.slotHeight / 2) - 5, 0xFFFFFF);
+                        .getUnlocalisedName(partInfo.subid)), 5, y + (slotHeight / 2) - 5, 0xFFFFFF);
             }
             else {
-                fontRendererObj.drawString(I18n.format("tail.none.name"), 5, y + (partList.slotHeight / 2) - 5, 0xFFFFFF);
+                fontRendererObj.drawString(I18n.format("tail.none.name"), 5, y + (slotHeight / 2) - 5, 0xFFFFFF);
             }
         }
 
         @Override
         public boolean mousePressed(int index, int mouseX, int mouseY, int p_148278_4_, int mouseSlotX, int mouseSlotY) {
-            return true;
+            return false;
         }
 
         @Override

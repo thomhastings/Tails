@@ -1,14 +1,15 @@
 package kihira.tails.client.gui.controls;
 
-import cpw.mods.fml.client.config.GuiSlider;
-import cpw.mods.fml.client.config.GuiUtils;
 import kihira.foxlib.client.RenderHelper;
 import kihira.foxlib.client.gui.ITooltip;
 import kihira.tails.common.Tails;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.client.config.GuiUtils;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public class GuiHSBSlider extends GuiSlider implements ITooltip {
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
         if (this.visible) {
-            this.field_146123_n = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+            this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
 
             GuiUtils.drawContinuousTexturedBox(buttonTextures, this.xPosition, this.yPosition, 0, 46, this.width, this.height, 200, 20, 2, 3, 2, 2, this.zLevel);
             mc.renderEngine.bindTexture(sliderTexture);
@@ -50,8 +51,8 @@ public class GuiHSBSlider extends GuiSlider implements ITooltip {
                 float red = (float) hueColour.getRed() / 255;
                 float green = (float) hueColour.getGreen() / 255;
                 float blue = (float) hueColour.getBlue() / 255;
-                GL11.glColor4f(red, green, blue, 1.0F);
-                drawTexturedModalRectScaled(xPosition + 1, yPosition + 1, 0, 176, 256, 20, this.width - 2, this.height - 2);
+                GlStateManager.color(red, green, blue, 1.0F);
+                drawScaledCustomSizeModalRect(xPosition + 1, yPosition + 1, 0, 176, 256, 20, this.width - 2, this.height - 2, 256, 256);
             }
             
             int srcY = 236;
@@ -64,17 +65,16 @@ public class GuiHSBSlider extends GuiSlider implements ITooltip {
             }
             if (type == HSBSliderType.SATURATION) {
                 Color hueColour = Color.getHSBColor(0F, 0F, briValue);
-                float red = (float) hueColour.getRed() / 255;
-                float green = (float) hueColour.getGreen() / 255;
-                float blue = (float) hueColour.getBlue() / 255;
-                GL11.glColor4f(red, green, blue, 1.0F);
-                drawTexturedModalRectScaled(xPosition + 1, yPosition + 1, 0, srcY, 231, 20, this.width - 2, this.height - 2);
-                GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+                float red = (float) hueColour.getRed() / 255F;
+                float green = (float) hueColour.getGreen() / 255F;
+                float blue = (float) hueColour.getBlue() / 255F;
+                GlStateManager.color(red, green, blue, 1.0F);
+                drawScaledCustomSizeModalRect(xPosition + 1, yPosition + 1, 0, srcY, 256, 20, this.width + 9, this.height - 2, 256, 256);
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             } else {
-                GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-                drawTexturedModalRectScaled(xPosition + 1, yPosition + 1, 0, srcY, 256, 20, this.width - 2, this.height - 2);
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                drawScaledCustomSizeModalRect(xPosition + 1, yPosition + 1, 0, srcY, 256, 20, this.width - 2, this.height - 2, 256, 256);
             }
-
             
             this.mouseDragged(mc, mouseX, mouseY);
         }
@@ -91,7 +91,7 @@ public class GuiHSBSlider extends GuiSlider implements ITooltip {
                 }
             }
 
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             RenderHelper.startGlScissor(xPosition, yPosition, width, height);
             mc.renderEngine.bindTexture(sliderTexture);
             this.drawTexturedModalRect(this.xPosition + (int)(this.sliderValue * (float)(this.width - 3) - 2), this.yPosition, 0, 0, 7, 4);
@@ -150,13 +150,13 @@ public class GuiHSBSlider extends GuiSlider implements ITooltip {
     public void drawTexturedModalRectScaled (int x, int y, int u, int v, int srcWidth, int srcHeight, int tarWidth, int tarHeight) {
         float f = 0.00390625F;
         float f1 = 0.00390625F;
-        Tessellator tessellator = Tessellator.instance;
-        tessellator.startDrawingQuads();
-        tessellator.addVertexWithUV((double)(x + 0), (double)(y + tarHeight), (double)this.zLevel, (double)((float)(u + 0) * f), (double)((float)(v + srcHeight) * f1));
-        tessellator.addVertexWithUV((double)(x + tarWidth), (double)(y + tarHeight), (double)this.zLevel, (double)((float)(u + srcWidth) * f), (double)((float)(v + srcHeight) * f1));
-        tessellator.addVertexWithUV((double)(x + tarWidth), (double)(y + 0), (double)this.zLevel, (double)((float)(u + srcWidth) * f), (double)((float)(v + 0) * f1));
-        tessellator.addVertexWithUV((double)(x + 0), (double)(y + 0), (double)this.zLevel, (double)((float)(u + 0) * f), (double)((float)(v + 0) * f1));
-        tessellator.draw();
+        WorldRenderer worldRenderer = Tessellator.getInstance().getWorldRenderer();
+        worldRenderer.startDrawingQuads();
+        worldRenderer.addVertexWithUV((double)(x + 0), (double)(y + tarHeight), (double)this.zLevel, (double)((float)(u + 0) * f), (double)((float)(v + srcHeight) * f1));
+        worldRenderer.addVertexWithUV((double)(x + tarWidth), (double)(y + tarHeight), (double)this.zLevel, (double)((float)(u + srcWidth) * f), (double)((float)(v + srcHeight) * f1));
+        worldRenderer.addVertexWithUV((double)(x + tarWidth), (double)(y + 0), (double)this.zLevel, (double)((float)(u + srcWidth) * f), (double)((float)(v + 0) * f1));
+        worldRenderer.addVertexWithUV((double)(x + 0), (double)(y + 0), (double)this.zLevel, (double)((float)(u + 0) * f), (double)((float)(v + 0) * f1));
+        worldRenderer.draw();
     }
 
     @Override

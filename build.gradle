@@ -24,13 +24,14 @@ repositories {
 }
 
 apply plugin: 'forge'
+//apply plugin: 'liteloader'
 
 project.ext {
     massive = "1"
     major = "2"
     minor = "3"
-    mcVersion = "1.7.10"
-    forgeVersion = "10.13.2.1236"
+    mcVersion = "1.8"
+    forgeVersion = "11.14.0.1239-1.8"
     foxlibDevVersion = "1.7.10-0.6.0.develop+"
     foxlibVersion = "1.7.10-0.6.0"
     buildVersion = System.getenv("BUILD_NUMBER")
@@ -45,7 +46,7 @@ configurations {
 
 dependencies {
     deployerJars "org.apache.maven.wagon:wagon-ftp:2.2"
-    compile "kihira:FoxLib:"+project.foxlibDevVersion+":dev"
+    //compile "kihira:FoxLib:"+project.foxlibDevVersion+":dev"
 }
 
 project.version = "${project.ext.mcVersion}-${project.ext.massive}.${project.ext.major}.${project.minor}"

@@ -8,8 +8,8 @@
 
 package kihira.tails.client.model;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import kihira.tails.client.ClientEventHandler;
 import kihira.tails.client.PartRegistry;
 import kihira.tails.common.PartInfo;
@@ -34,7 +34,7 @@ public class ModelRendererWrapper extends ModelRenderer {
         if (ClientEventHandler.currentEvent != null && ClientEventHandler.currentPartsData != null && ClientEventHandler.currentPlayerTexture != null) {
             PartInfo info = ClientEventHandler.currentPartsData.getPartInfo(partType);
             if (info != null && info.hasPart) {
-                PartRegistry.getRenderPart(info.partType, info.typeid).render(ClientEventHandler.currentEvent.entityPlayer, info, 0, 0, 0, ClientEventHandler.currentEvent.partialRenderTick);
+                PartRegistry.getRenderPart(info.partType, info.typeid).render(ClientEventHandler.currentEvent.entity, info, 0, 0, 0, ClientEventHandler.partialTicks);
 
                 Minecraft.getMinecraft().renderEngine.bindTexture(ClientEventHandler.currentPlayerTexture);
             }

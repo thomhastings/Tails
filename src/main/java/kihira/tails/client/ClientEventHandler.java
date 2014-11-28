@@ -8,12 +8,6 @@
 
 package kihira.tails.client;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.network.FMLNetworkEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import kihira.tails.client.gui.GuiEditor;
 import kihira.tails.client.model.ModelRendererWrapper;
 import kihira.tails.client.texture.TextureHelper;
@@ -25,12 +19,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngameMenu;
+import net.minecraft.client.model.ModelPlayer;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.UUID;
 
@@ -39,9 +40,10 @@ public class ClientEventHandler {
     private boolean sentPartInfoToServer = false;
     private boolean clearAllPartInfo = false;
 
-    public static RenderPlayerEvent.Pre currentEvent = null;
+    public static RenderLivingEvent.Pre currentEvent = null;
     public static PartsData currentPartsData = null;
     public static ResourceLocation currentPlayerTexture = null;
+    public static float partialTicks;
     boolean flag = false;
 
     /*
@@ -83,30 +85,42 @@ public class ClientEventHandler {
         clearAllPartInfo = true;
     }
 
+    @SubscribeEvent
+    public void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            partialTicks = event.renderTickTime;
+        }
+    }
+
     /*
         *** Rendering and building TailInfo ***
      */
+    //TODO this used to be RenderPlayerEvent.Pre but currently borked in forge 1.8 so fix in the future
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onPlayerRenderTick(RenderPlayerEvent.Pre e) {
-        UUID uuid = e.entityPlayer.getGameProfile().getId();
-        if (Tails.proxy.hasPartsData(uuid) && !e.entityPlayer.isInvisible()) {
-            PartsData data = Tails.proxy.getPartsData(uuid);
+    public void onPlayerRenderTick(RenderLivingEvent.Pre e) {
+        if (e.entity instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) e.entity;
+            ModelPlayer model = ((RenderPlayer) e.renderer).func_177136_g();
+            UUID uuid = player.getGameProfile().getId();
+            if (Tails.proxy.hasPartsData(uuid) && !player.isInvisible()) {
+                PartsData data = Tails.proxy.getPartsData(uuid);
 
-            if (!flag) {
-                e.renderer.modelBipedMain.bipedBody.addChild(new ModelRendererWrapper(e.renderer.modelBipedMain, PartsData.PartType.TAIL));
-                e.renderer.modelBipedMain.bipedBody.addChild(new ModelRendererWrapper(e.renderer.modelBipedMain, PartsData.PartType.WINGS));
-                e.renderer.modelBipedMain.bipedHead.addChild(new ModelRendererWrapper(e.renderer.modelBipedMain, PartsData.PartType.EARS));
-                flag = true;
+                if (!flag) {
+                    model.bipedBody.addChild(new ModelRendererWrapper(model, PartsData.PartType.TAIL));
+                    model.bipedBody.addChild(new ModelRendererWrapper(model, PartsData.PartType.WINGS));
+                    model.bipedHead.addChild(new ModelRendererWrapper(model, PartsData.PartType.EARS));
+                    flag = true;
+                }
+
+                currentPartsData = data;
+                currentPlayerTexture = ((AbstractClientPlayer) player).getLocationSkin();
+                currentEvent = e;
             }
-
-            currentPartsData = data;
-            currentPlayerTexture = ((AbstractClientPlayer) e.entityPlayer).getLocationSkin();
-            currentEvent = e;
         }
     }
 
     @SubscribeEvent()
-    public void onPlayerRenderTickPost(RenderPlayerEvent.Post e) {
+    public void onPlayerRenderTickPost(RenderLivingEvent.Post e) {
         //Reset to null after rendering the current tail
         currentPartsData = null;
         currentPlayerTexture = null;
@@ -150,10 +164,5 @@ public class ClientEventHandler {
                 sentPartInfoToServer = true;
             }
         }
-    }
-
-    public enum RenderType {
-        BODY,
-        HEAD
     }
 }

@@ -9,8 +9,8 @@
 package kihira.tails.client;
 
 import com.google.common.collect.ArrayListMultimap;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import kihira.tails.client.model.ears.ModelCatEars;
 import kihira.tails.client.model.ears.ModelFoxEars;
 import kihira.tails.client.model.ears.ModelPandaEars;
