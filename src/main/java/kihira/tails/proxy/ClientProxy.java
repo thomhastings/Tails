@@ -12,10 +12,12 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import kihira.tails.client.ClientEventHandler;
+import kihira.tails.common.EditCommand;
 import kihira.tails.common.LibraryManager;
 import kihira.tails.common.PartsData;
 import kihira.tails.common.Tails;
 import kihira.tails.common.network.*;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 
 import java.util.UUID;
@@ -27,6 +29,7 @@ public class ClientProxy extends CommonProxy {
     public void init() {
         registerMessages();
         registerHandlers();
+        ClientCommandHandler.instance.registerCommand(new EditCommand());
         libraryManager = new LibraryManager.ClientLibraryManager();
     }
 
@@ -57,11 +60,11 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void registerMessages() {
-        Tails.networkWrapper.registerMessage(PlayerDataMessage.Handler.class, PlayerDataMessage.class, 0, Side.CLIENT);
-        Tails.networkWrapper.registerMessage(PlayerDataMapMessage.Handler.class, PlayerDataMapMessage.class, 1, Side.CLIENT);
-        Tails.networkWrapper.registerMessage(LibraryEntriesMessage.Handler.class, LibraryEntriesMessage.class, 2, Side.CLIENT);
-        Tails.networkWrapper.registerMessage(LibraryRequestMessage.Handler.class, LibraryRequestMessage.class, 3, Side.CLIENT);
-        Tails.networkWrapper.registerMessage(ServerCapabilitiesMessage.Handler.class, ServerCapabilitiesMessage.class, 4, Side.CLIENT);
+        Tails.networkWrapper.registerMessage(PlayerDataMessage.Handler.class, PlayerDataMessage.class, 1, Side.CLIENT);
+        Tails.networkWrapper.registerMessage(PlayerDataMapMessage.Handler.class, PlayerDataMapMessage.class, 2, Side.CLIENT);
+        Tails.networkWrapper.registerMessage(LibraryEntriesMessage.Handler.class, LibraryEntriesMessage.class, 3, Side.CLIENT);
+        Tails.networkWrapper.registerMessage(LibraryRequestMessage.Handler.class, LibraryRequestMessage.class, 4, Side.CLIENT);
+        Tails.networkWrapper.registerMessage(ServerCapabilitiesMessage.Handler.class, ServerCapabilitiesMessage.class, 5, Side.CLIENT);
         super.registerMessages();
     }
 
@@ -71,6 +74,6 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(eventHandler);
         FMLCommonHandler.instance().bus().register(eventHandler);
 
-        //super.registerHandlers();
+        super.registerHandlers();
     }
 }

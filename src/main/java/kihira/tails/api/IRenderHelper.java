@@ -10,10 +10,13 @@ package kihira.tails.api;
 
 import kihira.tails.client.render.RenderPart;
 import kihira.tails.common.PartInfo;
+import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.entity.EntityLivingBase;
 
-public interface IRenderHelper {
+public interface IRenderHelper<T extends EntityLivingBase> {
 
-    public void onPreRenderTail(EntityLivingBase entity, RenderPart tail, PartInfo info, double x, double y, double z);
+    public void addModelHelpers(RenderLiving renderLiving);
+
+    public void onPreRenderPart(T entity, RenderPart tail, PartInfo info, double x, double y, double z);
 
 }

@@ -12,10 +12,11 @@ import kihira.tails.client.texture.TextureHelper;
 import kihira.tails.common.PartInfo;
 import kihira.tails.common.PartsData;
 import kihira.tails.common.Tails;
-import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
 
 public class GuiEditor extends GuiBase {
 
+    public final EntityLivingBase entityEditing;
     public int textureID;
     private PartsData.PartType partType;
     private PartsData partsData;
@@ -30,24 +31,23 @@ public class GuiEditor extends GuiBase {
     public LibraryPanel libraryPanel;
     public LibraryInfoPanel libraryInfoPanel;
 
-    public GuiEditor() {
+    public GuiEditor(EntityLivingBase entityEditing) {
+        this.entityEditing = entityEditing;
         //Backup original PartInfo or create default one
         PartInfo partInfo;
-        if (Tails.localPartsData == null) {
-            Tails.setLocalPartsData(new PartsData());
-        }
+        PartsData partsData = Tails.proxy.hasPartsData(entityEditing.getPersistentID()) ? Tails.proxy.getPartsData(entityEditing.getPersistentID()) : new PartsData();
 
         //Default to Tail
         partType = PartsData.PartType.TAIL;
         for (PartsData.PartType partType : PartsData.PartType.values()) {
-            if (!Tails.localPartsData.hasPartInfo(partType)) {
-                Tails.localPartsData.setPartInfo(partType, new PartInfo(false, 0, 0, 0, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, null, partType));
+            if (!partsData.hasPartInfo(partType)) {
+                partsData.setPartInfo(partType, new PartInfo(false, 0, 0, 0, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, null, partType));
             }
         }
-        partInfo = Tails.localPartsData.getPartInfo(partType);
+        partInfo = partsData.getPartInfo(partType);
 
         originalPartInfo = partInfo.deepCopy();
-        setPartsData(Tails.localPartsData.deepCopy());
+        setPartsData(partsData.deepCopy());
         this.partInfo = originalPartInfo.deepCopy();
     }
 
@@ -85,7 +85,7 @@ public class GuiEditor extends GuiBase {
 
     @Override
     public void onGuiClosed() {
-        Tails.proxy.addPartsData(mc.getSession().func_148256_e().getId(), Tails.localPartsData);
+        //Tails.proxy.addPartsData(mc.getSession().func_148256_e().getId(), Tails.localPartsData); //TODO
         super.onGuiClosed();
     }
 
@@ -109,7 +109,7 @@ public class GuiEditor extends GuiBase {
 
     public void setPartsData(PartsData newPartsData) {
         partsData = newPartsData;
-        Tails.proxy.addPartsData(Minecraft.getMinecraft().thePlayer.getGameProfile().getId(), partsData);
+        Tails.proxy.addPartsData(entityEditing.getPersistentID(), partsData);
     }
 
     public PartsData getPartsData() {

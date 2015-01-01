@@ -27,6 +27,7 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -43,6 +44,8 @@ public class ClientEventHandler {
     public static RenderPlayerEvent.Pre currentEvent = null;
     public static PartsData currentPartsData = null;
     public static ResourceLocation currentPlayerTexture = null;
+
+    public static boolean openEditor; //Because using client side commands means you can't open GUI's as they're fired within the GuiChat object.
     boolean flag = false;
 
     /*
@@ -64,7 +67,7 @@ public class ClientEventHandler {
                 if (!Minecraft.getMinecraft().isIntegratedServerRunning()) {
                     Tails.networkWrapper.sendToServer(new LibraryRequestMessage());
                 }
-                event.gui.mc.displayGuiScreen(new GuiEditor());
+                event.gui.mc.displayGuiScreen(new GuiEditor(Minecraft.getMinecraft().thePlayer));
                 event.setCanceled(true);
             }
         }
@@ -126,11 +129,15 @@ public class ClientEventHandler {
         if (!(e.entity instanceof EntityPlayer)) {
             UUID uuid = e.entity.getPersistentID();
             //TODO Switch to IExtendedEntityProperties instead? Save the data on the player
-            if (Tails.proxy.hasPartsData(uuid) && Tails.proxy.getPartsData(uuid).hasPartInfo(PartsData.PartType.TAIL) && !e.entity.isInvisible()) {
-                PartInfo info = Tails.proxy.getPartsData(uuid).getPartInfo(PartsData.PartType.TAIL);
-                PartsData.PartType partType = PartsData.PartType.TAIL;
+            if (Tails.proxy.hasPartsData(uuid) && !e.entity.isInvisible()) {
+                PartsData partsData = Tails.proxy.getPartsData(uuid);
+                for (PartsData.PartType partType : PartsData.PartType.values()) {
+                    if (partsData.hasPartInfo(partType)) {
+                        PartInfo info = partsData.getPartInfo(partType);
 
-                PartRegistry.getRenderPart(partType, info.typeid).render(e.entity, info, e.x, e.y, e.z, 1);
+                        PartRegistry.getRenderPart(partType, info.typeid).render(e.entity, info, e.x, e.y, e.z, 1);
+                    }
+                }
             }
         }
     }
@@ -155,6 +162,11 @@ public class ClientEventHandler {
             else if (!sentPartInfoToServer && Minecraft.getMinecraft().theWorld != null) {
                 Tails.networkWrapper.sendToServer(new PlayerDataMessage(Minecraft.getMinecraft().thePlayer.getGameProfile().getId(), Tails.localPartsData, false));
                 sentPartInfoToServer = true;
+            }
+
+            if (openEditor) {
+                openEditor = false;
+                Minecraft.getMinecraft().displayGuiScreen(new GuiEditor((EntityLivingBase) Minecraft.getMinecraft().pointedEntity));
             }
         }
     }

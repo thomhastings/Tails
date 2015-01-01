@@ -6,17 +6,24 @@
  * See LICENSE for full License
  */
 
-package kihira.tails.client.render;
+package kihira.tails.client.render.helper;
 
 import kihira.tails.api.IRenderHelper;
+import kihira.tails.client.render.RenderPart;
 import kihira.tails.common.PartInfo;
+import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.entity.EntityLivingBase;
 import org.lwjgl.opengl.GL11;
 
 public class FakeEntityRenderHelper implements IRenderHelper {
 
     @Override
-    public void onPreRenderTail(EntityLivingBase entity, RenderPart tail, PartInfo info, double x, double y, double z) {
+    public void addModelHelpers(RenderLiving renderLiving) {
+
+    }
+
+    @Override
+    public void onPreRenderPart(EntityLivingBase entity, RenderPart tail, PartInfo info, double x, double y, double z) {
         switch (info.partType) {
             case TAIL: {
                 //Nine tails

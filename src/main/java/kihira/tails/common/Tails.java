@@ -14,17 +14,21 @@ import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import kihira.tails.client.FakeEntity;
-import kihira.tails.client.render.FakeEntityRenderHelper;
-import kihira.tails.client.render.PlayerRenderHelper;
 import kihira.tails.client.render.RenderPart;
+import kihira.tails.client.render.helper.CowRenderHelper;
+import kihira.tails.client.render.helper.FakeEntityRenderHelper;
+import kihira.tails.client.render.helper.PlayerRenderHelper;
 import kihira.tails.proxy.CommonProxy;
+import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -43,6 +47,7 @@ public class Tails {
 
     public static Configuration configuration;
     public static boolean libraryEnabled;
+    public static boolean editEntities;
     public static boolean hasRemote;
 
     @SidedProxy(clientSide = "kihira.tails.proxy.ClientProxy", serverSide = "kihira.tails.proxy.CommonProxy")
@@ -66,8 +71,18 @@ public class Tails {
 
                 RenderPart.registerRenderHelper(EntityPlayer.class, new PlayerRenderHelper());
                 RenderPart.registerRenderHelper(FakeEntity.class, new FakeEntityRenderHelper());
+                RenderPart.registerRenderHelper(EntityCow.class, new CowRenderHelper());
             }
         //}
+    }
+
+    public void onPostInit(FMLPostInitializationEvent event) {
+        RenderPart.addModelWrappers();
+    }
+
+    @Mod.EventHandler
+    public void onServerStart(FMLServerStartingEvent event) {
+        event.registerServerCommand(new EditCommand());
     }
 
     @SubscribeEvent

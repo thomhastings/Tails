@@ -8,6 +8,7 @@
 
 package kihira.tails.common;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import kihira.tails.common.network.PlayerDataMapMessage;
@@ -20,7 +21,9 @@ public class ServerEventHandler {
     public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         //Send current known tails to client
         Tails.networkWrapper.sendTo(new PlayerDataMapMessage(Tails.proxy.getPartsData()), (EntityPlayerMP) event.player);
-        Tails.networkWrapper.sendTo(new ServerCapabilitiesMessage(Tails.libraryEnabled), (EntityPlayerMP) event.player);
+        Tails.networkWrapper.sendTo(new ServerCapabilitiesMessage(Tails.libraryEnabled,FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer() ||
+                FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().func_152596_g(event.player.getGameProfile())),
+                (EntityPlayerMP) event.player);
     }
 
     @SubscribeEvent

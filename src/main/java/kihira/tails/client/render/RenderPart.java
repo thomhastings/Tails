@@ -15,7 +15,10 @@ import kihira.tails.client.model.ModelPartBase;
 import kihira.tails.client.texture.TextureHelper;
 import kihira.tails.common.PartInfo;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
 
@@ -55,7 +58,7 @@ public class RenderPart {
         if (entity instanceof EntityPlayer) helper = getRenderHelper(EntityPlayer.class);
         else helper = getRenderHelper(entity.getClass());
         if (helper != null) {
-            helper.onPreRenderTail(entity, this, info, x, y, z);
+            helper.onPreRenderPart(entity, this, info, x, y, z);
         }
 
         this.doRender(entity, info, partialTicks);
@@ -129,10 +132,21 @@ public class RenderPart {
         }
     }
 
+    public static boolean hasRenderHelper(Class<? extends EntityLivingBase> clazz) {
+        return renderHelpers.containsKey(clazz);
+    }
+
     public static IRenderHelper getRenderHelper(Class<? extends EntityLivingBase> clazz) {
-        if (renderHelpers.containsKey(clazz)) {
+        if (hasRenderHelper(clazz)) {
             return renderHelpers.get(clazz);
         }
         else return null;
+    }
+
+    public static void addModelWrappers() {
+        //Bleeeeeeeh
+        RenderLiving renderLiving = (RenderLiving) RenderManager.instance.entityRenderMap.get(EntityCow.class);
+
+        getRenderHelper(EntityCow.class).addModelHelpers(renderLiving);
     }
 }
